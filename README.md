@@ -210,11 +210,57 @@ function saveAll() {
         data.push(row);
     });
 
-    db.ref("warehouse").set(data)
+   db.ref("warehouse").push({
+    rows: data,
+    time: Date.now()
+});
     .then(() => alert("تم الحفظ على Firebase ✅"))
     .catch(err => alert("خطأ في الحفظ ❌"));
 }
+window.onload = function () {
+    loadData();
+};
 
+function loadData() {
+    db.ref("warehouse").once("value", (snapshot) => {
+        const data = snapshot.val();
+
+        let tbody = document.querySelector("#sheet tbody");
+        tbody.innerHTML = ""; // امسح الجدول
+
+        if (!data) return;
+
+        // لو البيانات محفوظة ك array (من set)
+        if (Array.isArray(data)) {
+            data.forEach(row => {
+                addRowToTable(row);
+            });
+        } 
+        // لو محفوظة ك objects (push)
+        else {
+            Object.values(data).forEach(item => {
+                if (item.rows) {
+                    addRowToTable(item.rows);
+                }
+            });
+        }
+    });
+}
+
+function addRowToTable(rowData) {
+    let tr = document.createElement("tr");
+
+    tr.innerHTML = `<td><button class="delete-btn" onclick="deleteRow(this)">❌</button></td>`;
+
+    rowData.forEach(val => {
+        let td = document.createElement("td");
+        td.contentEditable = true;
+        td.innerText = val;
+        tr.appendChild(td);
+    });
+
+    document.querySelector("#sheet tbody").appendChild(tr);
+}
 </script>
 
 </body>
