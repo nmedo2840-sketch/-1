@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+اداره المخازن
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
