@@ -167,24 +167,59 @@ document.addEventListener("paste", function (e) {
 
 /* ================= Excel Export ================= */
 async function exportExcel() {
-    const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet("المخازن");
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("ملخص مخازن القطاع ");
 
-    let headers = ["مسلسل","كود","اسم","موقف","مسؤول","مخزون","رواكد","تدوير","مدة"];
-    ws.addRow(headers);
+    const headers = [
+        "مسلسل","كود المخزن","اسم المخزن","موقف الساب","مسؤول الساب",
+        "قيمة المخزون","قيمة الرواكد الحالية","قيمة تدوير رواكد مشاريع اخرى","المدة المتبقية للمشروع"
+    ];
 
-    document.querySelectorAll("#sheet tbody tr").forEach(tr => {
-        let row = [];
-        tr.querySelectorAll("td").forEach((td, i) => {
-            if (i !== 0) row.push(td.innerText);
-        });
-        ws.addRow(row);
+    const headerRow = worksheet.addRow(headers);
+
+    headerRow.eachCell(cell => {
+        cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'2F5597' } };
+        cell.font = { bold:true, color:{ argb:'FFFFFF' } };
+        cell.alignment = { horizontal:'center' };
+        cell.border = { top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'} };
     });
 
-    const buffer = await wb.xlsx.writeBuffer();
+    document.querySelectorAll("#sheet tbody tr").forEach(row => {
+        let rowData = [];
+        row.querySelectorAll("td").forEach((cell, index) => {
+            if(index !== 0) rowData.push(cell.innerText);
+        });
+
+        let newRow = worksheet.addRow(rowData);
+
+        newRow.eachCell(cell => {
+            cell.alignment = { horizontal:'center' };
+
+            if (newRow.number % 2 === 0) {
+                cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'F2F2F2' } };
+            }
+
+            cell.border = { top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'} };
+        });
+    });
+
+    worksheet.columns = [
+        { width:10 },{ width:15 },{ width:25 },{ width:15 },
+        { width:20 },{ width:15 },{ width:20 },{ width:25 },{ width:20 }
+    ];
+
+    worksheet.autoFilter = {
+        from: { row:1, column:1 },
+        to: { row:worksheet.rowCount, column:worksheet.columnCount }
+    };
+
+    worksheet.views = [
+        { state:'frozen', ySplit:1, rightToLeft:true }
+    ];
+
+    const buffer = await workbook.xlsx.writeBuffer();
     saveAs(new Blob([buffer]), "المخازن.xlsx");
 }
-
 /* ================= حفظ Firebase ================= */
 function saveAll() {
     let data = [];
