@@ -197,12 +197,9 @@ function saveAll() {
         data.push(row);
     });
 
-    db.ref("warehouse").push({
-        rows: data,
-        time: Date.now()
-    })
+    db.ref("warehouse").set(data)
     .then(() => alert("تم الحفظ على Firebase ✅"))
-    .catch(err => alert("خطأ في الحفظ ❌"));
+    .catch(err => alert("خطأ ❌"));
 }
 
 /* ================= تحميل البيانات ================= */
@@ -219,12 +216,8 @@ function loadData() {
 
         if (!data) return;
 
-        Object.values(data).forEach(item => {
-            if (item.rows) {
-                item.rows.forEach(row => {
-                    addRowToTable(row);
-                });
-            }
+        data.forEach(row => {
+            addRowToTable(row);
         });
     });
 }
