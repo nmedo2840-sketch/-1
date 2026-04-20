@@ -249,14 +249,26 @@ function loadData() {
         let tbody = document.querySelector("#sheet tbody");
         tbody.innerHTML = "";
 
-        if (!data) return;
+        if (!data) {
+            addEmptyRow();
+            return;
+        }
 
-        data.forEach(row => {
-            addRowToTable(row);
+        // 🔥 مهم: نحولها لأي شكل (Array أو Object)
+        let records = Array.isArray(data) ? data : Object.values(data);
+
+        if (records.length === 0) {
+            addEmptyRow();
+            return;
+        }
+
+        records.forEach(row => {
+            if (Array.isArray(row)) {
+                addRowToTable(row);
+            }
         });
     });
 }
-
 function addRowToTable(rowData) {
     let tr = document.createElement("tr");
 
@@ -271,11 +283,26 @@ function addRowToTable(rowData) {
 
     document.querySelector("#sheet tbody").appendChild(tr);
 }
+    function addEmptyRow() {
+    let tr = document.createElement("tr");
 
-</script>
+    tr.innerHTML = `
+        <td><button class="delete-btn" onclick="deleteRow(this)">❌</button></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+    `;
 
-</body>
-</html>
+    document.querySelector("#sheet tbody").appendChild(tr);
+}
+
+
 </script>
 
 </body>
