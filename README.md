@@ -9,7 +9,6 @@
 <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
 
-<!-- Firebase (Compat Version - بدون مشاكل import) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
@@ -111,9 +110,7 @@ td:focus {
 
 <script>
 
-/* =========================
-   🔥 Firebase Config
-========================= */
+/* ================= Firebase ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyCziOxTUx8lpNbBCJT9SQbebMhYdupw6Dg",
   authDomain: "market-app-4f1ef.firebaseapp.com",
@@ -124,9 +121,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-/* =========================
-   ➕ إضافة صف
-========================= */
+/* ================= إضافة صف ================= */
 function addRow() {
     let table = document.querySelector("#sheet tbody");
     let newRow = table.rows[0].cloneNode(true);
@@ -138,16 +133,12 @@ function addRow() {
     table.appendChild(newRow);
 }
 
-/* =========================
-   ❌ حذف صف
-========================= */
+/* ================= حذف صف ================= */
 function deleteRow(btn) {
     btn.closest("tr").remove();
 }
 
-/* =========================
-   📋 Paste من Excel
-========================= */
+/* ================= Paste Excel ================= */
 document.addEventListener("paste", function (e) {
     let data = (e.clipboardData || window.clipboardData).getData("text");
     let rows = data.split("\n");
@@ -174,9 +165,7 @@ document.addEventListener("paste", function (e) {
     e.preventDefault();
 });
 
-/* =========================
-   📥 Excel Export
-========================= */
+/* ================= Excel Export ================= */
 async function exportExcel() {
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet("المخازن");
@@ -196,9 +185,7 @@ async function exportExcel() {
     saveAs(new Blob([buffer]), "المخازن.xlsx");
 }
 
-/* =========================
-   ☁ حفظ Firebase
-========================= */
+/* ================= حفظ Firebase ================= */
 function saveAll() {
     let data = [];
 
@@ -210,40 +197,35 @@ function saveAll() {
         data.push(row);
     });
 
-   db.ref("warehouse").push({
-    rows: data,
-    time: Date.now()
-});
+    db.ref("warehouse").push({
+        rows: data,
+        time: Date.now()
+    })
     .then(() => alert("تم الحفظ على Firebase ✅"))
     .catch(err => alert("خطأ في الحفظ ❌"));
 }
+
+/* ================= تحميل البيانات ================= */
 window.onload = function () {
     loadData();
 };
 
 function loadData() {
-    db.ref("warehouse").once("value", (snapshot) => {
+    db.ref("warehouse").on("value", (snapshot) => {
         const data = snapshot.val();
 
         let tbody = document.querySelector("#sheet tbody");
-        tbody.innerHTML = ""; // امسح الجدول
+        tbody.innerHTML = "";
 
         if (!data) return;
 
-        // لو البيانات محفوظة ك array (من set)
-        if (Array.isArray(data)) {
-            data.forEach(row => {
-                addRowToTable(row);
-            });
-        } 
-        // لو محفوظة ك objects (push)
-        else {
-            Object.values(data).forEach(item => {
-                if (item.rows) {
-                    addRowToTable(item.rows);
-                }
-            });
-        }
+        Object.values(data).forEach(item => {
+            if (item.rows) {
+                item.rows.forEach(row => {
+                    addRowToTable(row);
+                });
+            }
+        });
     });
 }
 
@@ -261,11 +243,11 @@ function addRowToTable(rowData) {
 
     document.querySelector("#sheet tbody").appendChild(tr);
 }
+
 </script>
 
 </body>
 </html>
-
 </script>
 
 </body>
