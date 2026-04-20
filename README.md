@@ -1,4 +1,4 @@
-اداره المخازن
+<!DOCTYPE html>
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
@@ -8,6 +8,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
+
+<!-- Firebase (Compat Version - بدون مشاكل import) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <style>
 body {
@@ -65,10 +69,10 @@ td:focus {
 
 <div class="title">ملخص مخازن القطاع</div>
 
-<div class="text-center">
+<div class="text-center mb-3">
     <button class="btn btn-success" onclick="addRow()">➕ إضافة صف</button>
     <button class="btn btn-primary" onclick="exportExcel()">📥 Excel</button>
-    <button class="btn btn-warning" onclick="saveToGoogle()">☁ حفظ على Google</button>
+    <button class="btn btn-warning" onclick="saveAll()">☁ حفظ Firebase</button>
 </div>
 
 <div class="table-container">
@@ -108,13 +112,17 @@ td:focus {
 <script>
 
 /* =========================
-   🔗 إعدادات Google Sheets
+   🔥 Firebase Config
 ========================= */
-const GOOGLE_CONFIG = {
-    API_URL: "https://script.google.com/macros/s/AKfycbyWoUNJ2jh2cjB7IUFAvc7QMi-wdB4zWxyLzHN_JosIcB6ciLl6AERmcaxGb_vsiLV2Jg/exec",
-    enabled: true,
-    autoSave: false
+const firebaseConfig = {
+  apiKey: "AIzaSyCziOxTUx8lpNbBCJT9SQbebMhYdupw6Dg",
+  authDomain: "market-app-4f1ef.firebaseapp.com",
+  databaseURL: "https://market-app-4f1ef-default-rtdb.firebaseio.com",
+  projectId: "market-app-4f1ef"
 };
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 /* =========================
    ➕ إضافة صف
@@ -177,11 +185,11 @@ async function exportExcel() {
     ws.addRow(headers);
 
     document.querySelectorAll("#sheet tbody tr").forEach(tr => {
-        let data = [];
+        let row = [];
         tr.querySelectorAll("td").forEach((td, i) => {
-            if (i !== 0) data.push(td.innerText);
+            if (i !== 0) row.push(td.innerText);
         });
-        ws.addRow(data);
+        ws.addRow(row);
     });
 
     const buffer = await wb.xlsx.writeBuffer();
@@ -189,11 +197,9 @@ async function exportExcel() {
 }
 
 /* =========================
-   ☁ حفظ على Google Sheets
+   ☁ حفظ Firebase
 ========================= */
-function saveToGoogle() {
-    if (!GOOGLE_CONFIG.enabled) return;
-
+function saveAll() {
     let data = [];
 
     document.querySelectorAll("#sheet tbody tr").forEach(tr => {
@@ -204,15 +210,15 @@ function saveToGoogle() {
         data.push(row);
     });
 
-    fetch(GOOGLE_CONFIG.API_URL, {
-        method: "POST",
-        body: JSON.stringify({ data }),
-        headers: { "Content-Type": "application/json" }
-    })
-    .then(res => res.text())
-    .then(msg => alert("تم الحفظ على Google ✅"))
-    .catch(err => alert("خطأ في الربط ❌"));
+    db.ref("warehouse").set(data)
+    .then(() => alert("تم الحفظ على Firebase ✅"))
+    .catch(err => alert("خطأ في الحفظ ❌"));
 }
+
+</script>
+
+</body>
+</html>
 
 </script>
 
